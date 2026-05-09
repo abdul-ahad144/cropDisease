@@ -29,8 +29,13 @@ if not st.session_state.logged_in:
     [data-testid="stAppViewContainer"] {
         background-color: #F4C542;
     }
-    h1, h2, h3, label { color: #1C1C1C; }
-    input { background-color: white !important; border-radius: 8px !important; }
+    h1, h2, h3, label {
+        color: #1C1C1C;
+    }
+    input {
+        background-color: white !important;
+        border-radius: 8px !important;
+    }
     .stButton > button {
         background-color: #0E7C1F;
         color: white;
@@ -46,60 +51,98 @@ if not st.session_state.logged_in:
 
     tab1, tab2, tab3 = st.tabs(["🔐 Login", "📝 Register", "🔁 Forgot Password"])
 
-    # -------- LOGIN --------
+    # -------------------------------
+    # LOGIN
+    # -------------------------------
     with tab1:
+
         username = st.text_input("Username", key="login_user")
         password = st.text_input("Password", type="password", key="login_pass")
 
         if st.button("Login", key="login_btn"):
+
             success, msg = login(username, password)
+
             if success:
                 st.session_state.logged_in = True
                 st.success(msg)
                 st.rerun()
+
             else:
                 st.error(msg)
 
-    # -------- REGISTER --------
+    # -------------------------------
+    # REGISTER
+    # -------------------------------
     with tab2:
-        new_user = st.text_input("Create Username", key="reg_user")
-        new_pass = st.text_input("Create Password", type="password", key="reg_pass")
 
-        question = st.selectbox("Security Question", [
-            "Your pet name?",
-            "Your school name?",
-            "Your favorite color?"
-        ], key="reg_question")
+        new_user = st.text_input("Create Username", key="reg_user")
+
+        new_pass = st.text_input(
+            "Create Password",
+            type="password",
+            key="reg_pass"
+        )
+
+        question = st.selectbox(
+            "Security Question",
+            [
+                "Your pet name?",
+                "Your school name?",
+                "Your favorite color?"
+            ],
+            key="reg_question"
+        )
 
         answer = st.text_input("Answer", key="reg_answer")
 
         if st.button("Register", key="register_btn"):
-            success, msg = register(new_user, new_pass, question, answer)
+
+            success, msg = register(
+                new_user,
+                new_pass,
+                question,
+                answer
+            )
+
             if success:
                 st.success("✅ Registered! Now login.")
+
             else:
                 st.error(msg)
 
-    # -------- FORGOT PASSWORD --------
+    # -------------------------------
+    # FORGOT PASSWORD
+    # -------------------------------
     with tab3:
+
         f_user = st.text_input("Enter Username", key="forgot_user")
 
         if st.button("Get Question", key="get_q_btn"):
+
             q = get_security_question(f_user)
 
             if q:
                 st.session_state.reset_user = f_user
                 st.session_state.question = q
+
             else:
                 st.error("User not found")
 
         if "question" in st.session_state:
+
             st.info(st.session_state.question)
 
             ans = st.text_input("Answer", key="forgot_answer")
-            new_pass = st.text_input("New Password", type="password", key="forgot_new_pass")
+
+            new_pass = st.text_input(
+                "New Password",
+                type="password",
+                key="forgot_new_pass"
+            )
 
             if st.button("Reset Password", key="reset_btn"):
+
                 success, msg = reset_password(
                     st.session_state.reset_user,
                     ans,
@@ -109,13 +152,14 @@ if not st.session_state.logged_in:
                 if success:
                     st.success(msg)
                     del st.session_state.question
+
                 else:
                     st.error(msg)
 
     st.stop()
 
 # -------------------------------
-# DASHBOARD (NORMAL)
+# DASHBOARD THEME
 # -------------------------------
 st.markdown("""
 <style>
@@ -129,7 +173,9 @@ st.markdown("""
 # LOGOUT
 # -------------------------------
 st.sidebar.title("🔐 Account")
+
 if st.sidebar.button("🚪 Logout", key="logout_btn"):
+
     st.session_state.logged_in = False
     st.rerun()
 
@@ -144,67 +190,167 @@ model = load_model()
 # SIDEBAR
 # -------------------------------
 st.sidebar.title("📊 Control Panel")
-city = st.sidebar.text_input("📍 Location", "Delhi", key="city")
-crop = st.sidebar.selectbox("🌾 Crop", ["Rice", "Wheat", "Corn"], key="crop")
-stage = st.sidebar.selectbox("🌱 Growth Stage", ["Seedling", "Vegetative", "Flowering", "Harvest"], key="stage")
+
+city = st.sidebar.text_input(
+    "📍 Location",
+    "Delhi",
+    key="city"
+)
+
+crop = st.sidebar.selectbox(
+    "🌾 Crop",
+    ["Rice", "Wheat", "Corn"],
+    key="crop"
+)
+
+stage = st.sidebar.selectbox(
+    "🌱 Growth Stage",
+    ["Seedling", "Vegetative", "Flowering", "Harvest"],
+    key="stage"
+)
 
 col1, col2, col3 = st.columns(3)
 
 # -------------------------------
-# ANALYZE
+# ANALYZE RISK
 # -------------------------------
 if st.sidebar.button("🚀 Analyze Risk", key="analyze_btn"):
 
     try:
         temp, humidity, rainfall = get_weather(city)
+
     except Exception as e:
         st.error(str(e))
         st.stop()
 
+    # -------------------------------
+    # WEATHER METRICS
+    # -------------------------------
     col1.metric("🌡 Temperature", f"{temp} °C")
     col2.metric("💧 Humidity", f"{humidity}%")
     col3.metric("🌧 Rainfall", f"{rainfall} mm")
 
-    dfi = (humidity * 0.5) + (rainfall * 0.3) + (temp * 0.2)
+    # -------------------------------
+    # DFI SCORE
+    # -------------------------------
+    dfi = (
+        (humidity * 0.5) +
+        (rainfall * 0.3) +
+        (temp * 0.2)
+    )
+
+    st.markdown("### 📈 Disease Favorability Index")
     st.progress(min(int(dfi), 100))
 
-    prob = model.predict_proba([[temp, humidity, rainfall]])[0][1]
+    # -------------------------------
+    # AI PREDICTION
+    # -------------------------------
+    prob = model.predict_proba(
+        [[temp, humidity, rainfall]]
+    )[0][1]
+
+    st.markdown("### 🤖 AI Disease Risk")
     st.progress(int(prob * 100))
 
     if prob < 0.3:
+
         st.success("🟢 Low Risk")
+
     elif prob < 0.7:
+
         st.warning("🟡 Medium Risk")
+
     else:
+
         st.error("🔴 High Risk")
 
 # -------------------------------
-# IMAGE
+# IMAGE SECTION
 # -------------------------------
 st.markdown("### 📸 Leaf Disease Detection")
 
-file = st.file_uploader("Upload Leaf Image", key="file_upload")
+file = st.file_uploader(
+    "Upload Leaf Image",
+    key="file_upload"
+)
 
 if file:
+
     img = Image.open(file)
+
     st.image(img, width=300)
 
     avg = np.array(img).mean()
-    if avg < 100:
-        st.error("Disease Detected")
+
+    # -------------------------------
+    # DISEASE PREDICTION
+    # -------------------------------
+    if avg < 70:
+
+        disease = "Leaf Blight"
+
+        solution = """
+        ✅ Spray copper-based fungicide  
+        ✅ Remove infected leaves  
+        ✅ Avoid overwatering  
+        ✅ Improve air circulation
+        """
+
+        st.error(f"🦠 Disease Detected: {disease}")
+
+        st.markdown("### 💊 Recommended Solution")
+
+        st.success(solution)
+
+    elif avg < 120:
+
+        disease = "Leaf Spot"
+
+        solution = """
+        ✅ Use neem oil spray  
+        ✅ Keep leaves dry  
+        ✅ Use balanced fertilizer  
+        ✅ Remove damaged parts
+        """
+
+        st.warning(f"⚠ Disease Detected: {disease}")
+
+        st.markdown("### 💊 Recommended Solution")
+
+        st.success(solution)
+
     else:
-        st.success("Healthy Leaf")
+
+        st.success("🌿 Healthy Leaf")
+
+        st.info("""
+        ✅ Plant looks healthy  
+        ✅ Maintain proper watering  
+        ✅ Continue nutrient management
+        """)
 
 # -------------------------------
-# DASHBOARD
+# ANALYTICS DASHBOARD
 # -------------------------------
 st.markdown("### 📊 Analytics Dashboard")
 
 data = pd.read_csv("data.csv")
 
 c1, c2 = st.columns(2)
-c1.line_chart(data[["temperature", "humidity", "rainfall"]])
-c2.bar_chart(data["disease"].value_counts())
 
+c1.line_chart(
+    data[["temperature", "humidity", "rainfall"]]
+)
+
+c2.bar_chart(
+    data["disease"].value_counts()
+)
+
+# -------------------------------
+# FOOTER
+# -------------------------------
 st.markdown("---")
-st.markdown("🚀 AI predicts crop disease before it happens")
+
+st.markdown(
+    "🚀 AI predicts crop disease before it happens"
+)
