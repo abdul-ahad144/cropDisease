@@ -10,7 +10,10 @@ from utils import get_weather
 # -------------------------------
 # PAGE CONFIG
 # -------------------------------
-st.set_page_config(page_title="PragyanAI", layout="wide")
+st.set_page_config(
+    page_title="PragyanAI",
+    layout="wide"
+)
 
 # -------------------------------
 # SESSION STATE
@@ -23,19 +26,24 @@ if "logged_in" not in st.session_state:
 # -------------------------------
 if not st.session_state.logged_in:
 
-    # 🎨 Yellow Theme
+    # -------------------------------
+    # YELLOW THEME
+    # -------------------------------
     st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] {
         background-color: #F4C542;
     }
+
     h1, h2, h3, label {
         color: #1C1C1C;
     }
+
     input {
         background-color: white !important;
         border-radius: 8px !important;
     }
+
     .stButton > button {
         background-color: #0E7C1F;
         color: white;
@@ -49,26 +57,40 @@ if not st.session_state.logged_in:
 
     st.title("🌾 Farmers Crops Detection Portal")
 
-    tab1, tab2, tab3 = st.tabs(["🔐 Login", "📝 Register", "🔁 Forgot Password"])
+    tab1, tab2, tab3 = st.tabs([
+        "🔐 Login",
+        "📝 Register",
+        "🔁 Forgot Password"
+    ])
 
     # -------------------------------
     # LOGIN
     # -------------------------------
     with tab1:
 
-        username = st.text_input("Username", key="login_user")
-        password = st.text_input("Password", type="password", key="login_pass")
+        username = st.text_input(
+            "Username",
+            key="login_user"
+        )
+
+        password = st.text_input(
+            "Password",
+            type="password",
+            key="login_pass"
+        )
 
         if st.button("Login", key="login_btn"):
 
             success, msg = login(username, password)
 
             if success:
+
                 st.session_state.logged_in = True
                 st.success(msg)
                 st.rerun()
 
             else:
+
                 st.error(msg)
 
     # -------------------------------
@@ -76,7 +98,10 @@ if not st.session_state.logged_in:
     # -------------------------------
     with tab2:
 
-        new_user = st.text_input("Create Username", key="reg_user")
+        new_user = st.text_input(
+            "Create Username",
+            key="reg_user"
+        )
 
         new_pass = st.text_input(
             "Create Password",
@@ -94,7 +119,10 @@ if not st.session_state.logged_in:
             key="reg_question"
         )
 
-        answer = st.text_input("Answer", key="reg_answer")
+        answer = st.text_input(
+            "Answer",
+            key="reg_answer"
+        )
 
         if st.button("Register", key="register_btn"):
 
@@ -106,9 +134,11 @@ if not st.session_state.logged_in:
             )
 
             if success:
+
                 st.success("✅ Registered! Now login.")
 
             else:
+
                 st.error(msg)
 
     # -------------------------------
@@ -116,24 +146,32 @@ if not st.session_state.logged_in:
     # -------------------------------
     with tab3:
 
-        f_user = st.text_input("Enter Username", key="forgot_user")
+        f_user = st.text_input(
+            "Enter Username",
+            key="forgot_user"
+        )
 
         if st.button("Get Question", key="get_q_btn"):
 
             q = get_security_question(f_user)
 
             if q:
+
                 st.session_state.reset_user = f_user
                 st.session_state.question = q
 
             else:
+
                 st.error("User not found")
 
         if "question" in st.session_state:
 
             st.info(st.session_state.question)
 
-            ans = st.text_input("Answer", key="forgot_answer")
+            ans = st.text_input(
+                "Answer",
+                key="forgot_answer"
+            )
 
             new_pass = st.text_input(
                 "New Password",
@@ -150,10 +188,12 @@ if not st.session_state.logged_in:
                 )
 
                 if success:
+
                     st.success(msg)
                     del st.session_state.question
 
                 else:
+
                     st.error(msg)
 
     st.stop()
@@ -170,7 +210,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -------------------------------
-# LOGOUT
+# SIDEBAR
 # -------------------------------
 st.sidebar.title("🔐 Account")
 
@@ -182,12 +222,14 @@ if st.sidebar.button("🚪 Logout", key="logout_btn"):
 # -------------------------------
 # HEADER
 # -------------------------------
-st.markdown("## 🌾 PragyanAI Crop Intelligence Dashboard")
+st.markdown(
+    "## 🌾 PragyanAI Crop Intelligence Dashboard"
+)
 
 model = load_model()
 
 # -------------------------------
-# SIDEBAR
+# CONTROL PANEL
 # -------------------------------
 st.sidebar.title("📊 Control Panel")
 
@@ -205,7 +247,12 @@ crop = st.sidebar.selectbox(
 
 stage = st.sidebar.selectbox(
     "🌱 Growth Stage",
-    ["Seedling", "Vegetative", "Flowering", "Harvest"],
+    [
+        "Seedling",
+        "Vegetative",
+        "Flowering",
+        "Harvest"
+    ],
     key="stage"
 )
 
@@ -214,21 +261,37 @@ col1, col2, col3 = st.columns(3)
 # -------------------------------
 # ANALYZE RISK
 # -------------------------------
-if st.sidebar.button("🚀 Analyze Risk", key="analyze_btn"):
+if st.sidebar.button(
+    "🚀 Analyze Risk",
+    key="analyze_btn"
+):
 
     try:
+
         temp, humidity, rainfall = get_weather(city)
 
     except Exception as e:
+
         st.error(str(e))
         st.stop()
 
     # -------------------------------
     # WEATHER METRICS
     # -------------------------------
-    col1.metric("🌡 Temperature", f"{temp} °C")
-    col2.metric("💧 Humidity", f"{humidity}%")
-    col3.metric("🌧 Rainfall", f"{rainfall} mm")
+    col1.metric(
+        "🌡 Temperature",
+        f"{temp} °C"
+    )
+
+    col2.metric(
+        "💧 Humidity",
+        f"{humidity}%"
+    )
+
+    col3.metric(
+        "🌧 Rainfall",
+        f"{rainfall} mm"
+    )
 
     # -------------------------------
     # DFI SCORE
@@ -240,17 +303,23 @@ if st.sidebar.button("🚀 Analyze Risk", key="analyze_btn"):
     )
 
     st.markdown("### 📈 Disease Favorability Index")
-    st.progress(min(int(dfi), 100))
+
+    st.progress(
+        min(int(dfi), 100)
+    )
 
     # -------------------------------
-    # AI PREDICTION
+    # AI MODEL PREDICTION
     # -------------------------------
     prob = model.predict_proba(
         [[temp, humidity, rainfall]]
     )[0][1]
 
     st.markdown("### 🤖 AI Disease Risk")
-    st.progress(int(prob * 100))
+
+    st.progress(
+        int(prob * 100)
+    )
 
     if prob < 0.3:
 
@@ -283,51 +352,108 @@ if file:
     avg = np.array(img).mean()
 
     # -------------------------------
-    # DISEASE PREDICTION
+    # DYNAMIC DISEASE DETECTION
     # -------------------------------
-    if avg < 70:
+    diseases = [
 
-        disease = "Leaf Blight"
+        {
+            "name": "Leaf Blight",
 
-        solution = """
-        ✅ Spray copper-based fungicide  
-        ✅ Remove infected leaves  
-        ✅ Avoid overwatering  
-        ✅ Improve air circulation
-        """
+            "condition": avg < 60,
 
-        st.error(f"🦠 Disease Detected: {disease}")
+            "level": "error",
 
-        st.markdown("### 💊 Recommended Solution")
+            "solution": """
+✅ Spray copper fungicide  
+✅ Remove infected leaves  
+✅ Avoid excess moisture  
+✅ Improve airflow around plants
+"""
+        },
 
-        st.success(solution)
+        {
+            "name": "Leaf Spot",
 
-    elif avg < 120:
+            "condition": 60 <= avg < 100,
 
-        disease = "Leaf Spot"
+            "level": "warning",
 
-        solution = """
-        ✅ Use neem oil spray  
-        ✅ Keep leaves dry  
-        ✅ Use balanced fertilizer  
-        ✅ Remove damaged parts
-        """
+            "solution": """
+✅ Use neem oil spray  
+✅ Avoid wet leaves  
+✅ Use balanced fertilizer  
+✅ Remove damaged leaf areas
+"""
+        },
 
-        st.warning(f"⚠ Disease Detected: {disease}")
+        {
+            "name": "Powdery Mildew",
 
-        st.markdown("### 💊 Recommended Solution")
+            "condition": 100 <= avg < 140,
 
-        st.success(solution)
+            "level": "warning",
 
-    else:
+            "solution": """
+✅ Spray sulfur fungicide  
+✅ Increase sunlight exposure  
+✅ Reduce humidity around crop  
+✅ Remove infected parts quickly
+"""
+        }
+    ]
+
+    disease_found = False
+
+    # -------------------------------
+    # CHECK DISEASE
+    # -------------------------------
+    for disease in diseases:
+
+        if disease["condition"]:
+
+            disease_found = True
+
+            # -------------------------------
+            # ALERT
+            # -------------------------------
+            if disease["level"] == "error":
+
+                st.error(
+                    f"🦠 Disease Detected: {disease['name']}"
+                )
+
+            else:
+
+                st.warning(
+                    f"⚠ Disease Detected: {disease['name']}"
+                )
+
+            # -------------------------------
+            # SOLUTION
+            # -------------------------------
+            st.markdown(
+                "### 💊 Recommended Solution"
+            )
+
+            st.success(
+                disease["solution"]
+            )
+
+            break
+
+    # -------------------------------
+    # HEALTHY LEAF
+    # -------------------------------
+    if not disease_found:
 
         st.success("🌿 Healthy Leaf")
 
         st.info("""
-        ✅ Plant looks healthy  
-        ✅ Maintain proper watering  
-        ✅ Continue nutrient management
-        """)
+✅ Plant looks healthy  
+✅ Maintain regular watering  
+✅ Continue proper nutrient supply  
+✅ Monitor leaves weekly
+""")
 
 # -------------------------------
 # ANALYTICS DASHBOARD
@@ -339,7 +465,13 @@ data = pd.read_csv("data.csv")
 c1, c2 = st.columns(2)
 
 c1.line_chart(
-    data[["temperature", "humidity", "rainfall"]]
+    data[
+        [
+            "temperature",
+            "humidity",
+            "rainfall"
+        ]
+    ]
 )
 
 c2.bar_chart(
